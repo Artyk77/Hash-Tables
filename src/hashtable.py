@@ -15,6 +15,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
+        self.count = 0 #reset
 
 
     def _hash(self, key):
@@ -51,7 +52,17 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        
+
+        if self.count >= self.capacity:
+            self.resize()
+
+        index = self._hash_mod(key)
+        if self.storage[index] is not None:
+            # Handle Collision
+            pass
+        self.storage[index] = value
+        self.count += 1
 
 
 
