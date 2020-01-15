@@ -54,15 +54,23 @@ class HashTable:
         '''
         
 
-        if self.count >= self.capacity:
-            self.resize()
+        hash_key = self._hash_mod(key)
 
-        index = self._hash_mod(key)
-        if self.storage[index] is not None:
-            # Handle Collision
-            pass
-        self.storage[index] = value
-        self.count += 1
+        if self.storage[hash_key]:
+            entry = self.storage[hash_key]
+            while entry:
+                if entry.key == key: # Update the value
+                    entry.value = value
+                    break
+                elif entry.next: # Allows to loop back through the next entry, which is why this is in a while loop
+                    entry = entry.next
+                else: # Link the two items
+                    entry.next = LinkedPair(key, value)
+                    self.count += 1
+                    break
+        else:
+            self.storage[hash_key] = LinkedPair(key, value) # Instert LinkedPair
+            self.count += 1
 
 
 
@@ -74,7 +82,32 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash_key = self._hash_mod(key)
+
+        if self.storage[hash_key] is None:
+            print("No Key Found", key)
+            return
+
+        entry = self.storage[hash_key]
+        prev_entry = None
+        while entry: # Same concept of insert, allows to loop through pairs (if there is a pair)
+            # print(entry.key, key)
+            if entry.key == key: # Matches correct key
+                if prev_entry:
+                    if entry.next: # Link the two together since the connector of these two is about to be removed
+                        prev_entry.next = entry.next
+                    else:
+                        prev_entry.next = None
+                else:
+                    if entry.next: # Shifts over one to the left so the first index is now the second (only if there is a next)
+                        self.storage[hash_key] = entry.next
+                    else:
+                        self.storage[hash_key] = None # Where it gets reset
+                self.count -= 1
+                return entry.value
+            else:
+                prev_entry = entry
+                entry = entry.next
 
 
     def retrieve(self, key):
@@ -85,7 +118,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash_key = self._hash_mod(key)
+
+        if self.storage[hash_key]:
+            entry = self.storage[hash_key]
+            while entry:
+                if entry.key == key:
+                    return entry.value
+                entry = entry.next
+        return None        
 
 
     def resize(self):
@@ -95,7 +136,19 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        new_storage = []
+        for entry in self.storage:
+            while entry:
+                new_storage.append([entry.key, entry.value])
+                entry = entry.next
+
+        self.capacity = 2*self.capacity
+        self.storage = [None]*self.capacity
+
+        for entry in new_storage :
+            self.insert(entry[0], entry[1])
+            self.count -= 1
+        return
 
 
 
